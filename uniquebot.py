@@ -21,13 +21,13 @@ class UniqueBot(irc.IRCClient):
 		# want to wait until we are identified to get auto-ops
 		# (i'm so lazy)
 		if 'You are now identified' in msg:
+			print "joining",self.factory.channel
 			self.join(self.factory.channel)
 			self.have_joined = True
-			
-		print channel, user, msg
-		
+
 	def signedOn(self):
 		self.msg("nickserv", "identify " + self.factory.password)
+		print "identifying with nickserv"
 	
 	def privmsg(self, user, channel, msg):
 		if channel == self.nickname:
@@ -48,7 +48,8 @@ class UniqueBot(irc.IRCClient):
 		for row in self.factory.c:
 			# kick dat ass
 			uk = row[0].encode('ascii', 'ignore')
-			self.kick("#newvce", user, "repeated: "+uk+" ("+hash[0:10]+")")
+			self.kick(self.factory.channel, user, "repeated: "+uk+" ("+hash[0:10]+")")
+			print "kicked user", user
 			return
 				
 		# insert the text into the db
