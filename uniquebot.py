@@ -49,7 +49,7 @@ class UniqueBot(irc.IRCClient):
 			# kick dat ass
 			uk = row[0].encode('ascii', 'ignore')
 			self.kick(self.factory.channel, user, "repeated: "+uk+" ("+hash[0:10]+")")
-			print "kicked user", user
+			print "kicked ", user
 			return
 				
 		# insert the text into the db
@@ -80,14 +80,19 @@ class UniqueBotFactory(protocol.ClientFactory):
 		reactor.stop()
 
 if __name__ == '__main__':
-    # initialize logging
-    log.startLogging(sys.stdout)
+	# give me the password!
+	if len(sys.argv) != 2:
+		print "Usage: uniquebot.py <password>\n"
+		sys.exit(1)
+	
+	# initialize logging
+	log.startLogging(sys.stdout)
     
-    # create factory protocol and application
-    f = UniqueBotFactory("secret", "#newvce", "db")
+	# create factory protocol and application
+	f = UniqueBotFactory(sys.argv[1], "#newvce", "db")
 
-    # connect factory to this host and port
-    reactor.connectTCP("irc.freenode.net", 6667, f)
+	# connect factory to this host and port
+	reactor.connectTCP("irc.freenode.net", 6667, f)
 
-    # run bot
-    reactor.run()
+	# run bot
+	reactor.run()
