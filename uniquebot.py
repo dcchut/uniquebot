@@ -1,5 +1,5 @@
-# Copyright (c) Twisted Matrix Laboratories.
-# See LICENSE for details.
+# uniquebot - by dcchut
+# based on skeleton code by Twisted Matrix Laboratories 
 
 # twisted imports
 from twisted.words.protocols import irc
