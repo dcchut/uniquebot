@@ -14,7 +14,8 @@ class UniqueBot(irc.IRCClient):
 	nickname = "robbbot" # nickname of the bot
 	auth 	 = {} 		 # list of (potential) authenticated users
 	rate     = 60 * 60 	 # an hour between point increments
-	pdefault = 3 		 # default number of points
+	last_ts  = 0
+	maxtp    = 3
 	
 	def noticed(self, user, channel, msg):					
 		# want to wait until we are identified to get auto-ops
@@ -33,9 +34,39 @@ class UniqueBot(irc.IRCClient):
 		if channel == self.nickname:
 			# PM's can blow me
 			return
-		
-		host = user.split('!', 1)[1]
+			
+		current_time = int(time.time())
 		user = user.split('!', 1)[0]
+		
+		# list points in console
+		if msg == '!points':
+			self.factory.c.execute("SELECT p FROM points WHERE h = ?", (user,))
+			
+			row = self.factory.c.fetchone()
+			
+			if row != None:
+				self.notice(user, "you have " + str(row[0]) + " points remaining")
+				
+			return
+		
+		# topscore
+		if msg == '!topscore':
+			if current_time - self.last_ts >= 60:
+				self.factory.c.execute("SELECT p, h FROM points ORDER BY p DESC")
+				counter = 0
+				
+				for row in self.factory.c:
+					if counter == 5:
+						break
+						
+					p = str(row[0]).encode('ascii', 'ignore')
+					h = str(row[1]).encode('ascii','ignore')
+					self.say(self.factory.channel, h + ": " + p + " points")
+					counter += 1
+				
+				return
+			
+				self.last_ts = current_time
 		
 		# do a login
 		if msg == '!auth':
@@ -66,18 +97,17 @@ class UniqueBot(irc.IRCClient):
 			original = row[0].encode('ascii', 'ignore')
 		
 			# find details about the points of this user
-			self.factory.c.execute("SELECT p, u FROM points WHERE h = ?", (host,))
+			self.factory.c.execute("SELECT p, u FROM points WHERE h = ?", (user,))
 			
 			host_points  = self.factory.c.fetchone()
-			current_time = int(time.time())
 			 
 			if (host_points == None):
 				# insert a new record & commit
-				self.factory.c.execute("INSERT INTO points (h, p, u) VALUES (?,?,?)", (host,self.pdefault,current_time))
+				self.factory.c.execute("INSERT INTO points (h, p, u) VALUES (?,?,?)", (user,0,current_time))
 				self.factory.db.commit()
 				
 				# store the real data in here
-				host_points = (self.pdefault, current_time)
+				host_points = (0, current_time)
 				
 			# actual points
 			points = host_points[0] - 1
@@ -87,9 +117,9 @@ class UniqueBot(irc.IRCClient):
 			points_delta = delta / self.rate
 
 			if (points_delta > 0):
-				new_points = min(points + points_delta, self.pdefault)
+				new_points = min(points + points_delta, self.maxtp)
 				
-				if new_points == self.pdefault:
+				if new_points == self.maxtp:
 					update_time = current_time
 				else:
 					# how soon after the last update would this user have accrued
@@ -99,20 +129,27 @@ class UniqueBot(irc.IRCClient):
 				
 				points = new_points
 					
-				self.factory.c.execute("UPDATE points SET p = ?, u = ? WHERE h = ?", (points, update_time, host))
+				self.factory.c.execute("UPDATE points SET p = ?, u = ? WHERE h = ?", (points, update_time, user))
 			else:
-				self.factory.c.execute("UPDATE points SET p = ? WHERE h = ?", (points, host))
+				self.factory.c.execute("UPDATE points SET p = ? WHERE h = ?", (points, user))
 			
 			self.factory.db.commit()
 			
 			# message
 			nmsg = "repeated: "+original+", "+str(points)+" points remaining ("+hash[0:10]+")"
 			
-			# if they have no points remaining, kick them
-			if points <= 0:
-				self.kick(self.factory.channel, user, "repeated " + original + ", " + str(points) + " points remaining (" + hash[0:10] + ")")
-							
+			# kick & notify them
+			self.kick(self.factory.channel, user, "repeated " + original + ", " + str(points) + " points remaining (" + hash[0:10] + ")")
 			self.notice(user, "warning, you repeated " + original + ", you have " + str(points) + " points remaining (" + hash[0:10] + ")")
+			
+			# add 1 point to the person who said this originally
+			self.factory.c.execute("SELECT p FROM points WHERE h = ?", (original,))
+			row = self.factory.c.fetchone()
+			
+			if (row != None) and (user != original):
+				points = row[0] + 1
+				self.factory.c.execute("UPDATE points SET p = ? WHERE h = ?", (points, original))
+				self.factory.db.commit()
 			
 			return
 		
@@ -140,7 +177,7 @@ class UniqueBotFactory(protocol.ClientFactory):
 		self.channel = channel
 		self.password = password
 		
-		# open a "connection" to the sqlite db
+		# open a "connection" to the sqlite db 
 		self.db = sqlite3.connect(db)
 		
 		# (maybe) create the table
