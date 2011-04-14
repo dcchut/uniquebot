@@ -11,9 +11,10 @@ import time, sys, sqlite3, hashlib
 
 # make sure only unique things are said
 class UniqueBot(irc.IRCClient):
-	nickname = "robbbot"
-	auth 	 = {}
-	rate     = 30
+	nickname = "robbbot" # nickname of the bot
+	auth 	 = {} 		 # list of (potential) authenticated users
+	rate     = 60 * 60 	 # an hour between point increments
+	pdefault = 3 		 # default number of points
 	
 	def noticed(self, user, channel, msg):					
 		# want to wait until we are identified to get auto-ops
@@ -72,11 +73,11 @@ class UniqueBot(irc.IRCClient):
 			 
 			if (host_points == None):
 				# insert a new record & commit
-				self.factory.c.execute("INSERT INTO points (h, p, u) VALUES (?,?,?)", (host,5,current_time))
+				self.factory.c.execute("INSERT INTO points (h, p, u) VALUES (?,?,?)", (host,self.pdefault,current_time))
 				self.factory.db.commit()
 				
 				# store the real data in here
-				host_points = [5, current_time]
+				host_points = (self.pdefault, current_time)
 				
 			# actual points
 			points = host_points[0] - 1
@@ -86,9 +87,9 @@ class UniqueBot(irc.IRCClient):
 			points_delta = delta / self.rate
 
 			if (points_delta > 0):
-				new_points = min(points + points_delta, 5)
+				new_points = min(points + points_delta, self.pdefault)
 				
-				if new_points == 5:
+				if new_points == self.pdefault:
 					update_time = current_time
 				else:
 					# how soon after the last update would this user have accrued
@@ -162,18 +163,26 @@ class UniqueBotFactory(protocol.ClientFactory):
 
 if __name__ == '__main__':
 	# give me the password!
-	if len(sys.argv) != 2:
-		print "Usage: uniquebot.py <password>\n"
+	if len(sys.argv) != 5:
+		print "Usage: uniquebot.py <server[:port]> <channel> <dbfile> <password>\n"
 		sys.exit(1)
 	
 	# initialize logging
 	log.startLogging(sys.stdout)
     
 	# create factory protocol and application
-	f = UniqueBotFactory(sys.argv[1], "#newvce", "db")
+	f = UniqueBotFactory(sys.argv[4], sys.argv[2], sys.argv[3])
+
+	# split server in server & port
+	c = sys.argv[1].split(':')
+	
+	if len(c) == 1:
+		port = 6667
+	else:
+		port = c[1]
 
 	# connect factory to this host and port
-	reactor.connectTCP("irc.freenode.net", 6667, f)
+	reactor.connectTCP(c[0], port, f)
 
 	# run bot
 	reactor.run()
