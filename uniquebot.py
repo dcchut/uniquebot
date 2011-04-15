@@ -16,7 +16,7 @@ class UniqueBot(irc.IRCClient):
 	auth 	 = {} 		 # list of (potential) authenticated users
 	rate     = 60 * 60 	 # an hour between point increments
 	last_ts  = 0
-	maxtp    = 3
+	maxtp    = 0
 	
 	def noticed(self, user, channel, msg):					
 		# want to wait until we are identified to get auto-ops
