@@ -53,10 +53,18 @@ class UniqueBot(irc.IRCClient):
 		# topscore
 		if msg == '!topscore':
 			if current_time - self.last_ts >= 60:
+				# sync all the records first
+				self.factory.c.execute("SELECT h FROM points")
+				
+				for row in self.factory.c:
+					self.syncUser(row[0], 0, current_time)
+					
+				# now do the right thing
 				self.factory.c.execute("SELECT p, h FROM points ORDER BY p DESC")
 				counter = 0
 				
 				for row in self.factory.c:
+					
 					if counter == 5:
 						break
 						
@@ -97,44 +105,7 @@ class UniqueBot(irc.IRCClient):
 			# original user who said this line
 			original = row[0].encode('ascii', 'ignore')
 		
-			# find details about the points of this user
-			self.factory.c.execute("SELECT p, u FROM points WHERE h = ?", (user,))
-			
-			host_points  = self.factory.c.fetchone()
-			 
-			if (host_points == None):
-				# insert a new record & commit
-				self.factory.c.execute("INSERT INTO points (h, p, u) VALUES (?,?,?)", (user,0,current_time))
-				self.factory.db.commit()
-				
-				# store the real data in here
-				host_points = (0, current_time)
-				
-			# actual points
-			points = host_points[0] - 1
-			delta  = current_time - host_points[1];
-			
-			# have we accrued any points since the last update?
-			points_delta = delta / self.rate
-
-			if (points_delta > 0):
-				new_points = min(points + points_delta, self.maxtp)
-				
-				if new_points == self.maxtp:
-					update_time = current_time
-				else:
-					# how soon after the last update would this user have accrued
-					# the correct number of points? don't wany to set to current_time,
-					# as this may have occured in the past
-					update_time = host_points[1] + self.rate * (points_delta)
-				
-				points = new_points
-					
-				self.factory.c.execute("UPDATE points SET p = ?, u = ? WHERE h = ?", (points, update_time, user))
-			else:
-				self.factory.c.execute("UPDATE points SET p = ? WHERE h = ?", (points, user))
-			
-			self.factory.db.commit()
+			self.syncUser(user, -1, current_time)
 			
 			# message
 			nmsg = "repeated: "+original+", "+str(points)+" points remaining ("+hash[0:10]+")"
@@ -144,19 +115,54 @@ class UniqueBot(irc.IRCClient):
 			self.notice(user, "warning, you repeated " + original + ", you have " + str(points) + " points remaining (" + hash[0:10] + ")")
 			
 			# add 1 point to the person who said this originally
-			self.factory.c.execute("SELECT p FROM points WHERE h = ?", (original,))
-			row = self.factory.c.fetchone()
-			
-			if (row != None) and (user != original):
-				points = row[0] + 1
-				self.factory.c.execute("UPDATE points SET p = ? WHERE h = ?", (points, original))
-				self.factory.db.commit()
+			self.syncUser(original, 1, current_time)
 			
 			return
 		
 		# insert the text into the db
 		self.factory.c.execute("INSERT INTO said (u, t) VALUES (?,?)",(user,hash,))
 		self.factory.db.commit()
+
+	def syncUser(self, user, points_delta, ctime):
+		# sync this user stuff :D
+		c = self.factory.cursor()
+		
+		# get details about the points of this user
+		c.execute("SELECT p, u FROM points WHERE h = ?", (user,))
+		
+		r = c.fetchone()
+		
+		# if the user has no record, give them a blank one
+		if (r == None):
+			c.execute("INSERT INTO points (h,p,u) VALUES (?,?,?)", (user, 0, ctime))
+			self.factory.db.commit()
+			
+			r = (0, ctime)
+			
+		# calculate the new record
+		points = r[0] + points_delta
+		delta  = ctime - r[1]
+		
+		# have we gotten any points since the last update?
+		points_delta = delta / self.rate
+		
+		if (points_delta > 0):
+			npoints = min(points + points_delta, self.maxtp)
+			
+			if npoints == self.maxtp:
+				update_time = current_time
+			else:
+				update_time = r[1] + self.rate * points_delta
+				
+			points = npoints
+		else:
+			update_time = ctime
+			
+		c.execute("UPDATE points SET p = ?, u = ? WHERE h = ?", (points, update_time, user))
+		
+		self.factory.db.commit()
+		
+		c.close()
 
 	def irc_RPL_WHOISUSER(self, prefix, params):
 		# auth any waiting users
