@@ -57,7 +57,10 @@ class UniqueBot(irc.IRCClient):
 				self.factory.c.execute("SELECT h FROM points")
 				
 				for row in self.factory.c:
-					self.syncUser(row[0], 0, current_time)
+					self.syncUser(row[0], 0, current_time, True)
+					
+				# cheap hack
+				self.factory.db.commit()
 					
 				# now do the right thing
 				self.factory.c.execute("SELECT p, h FROM points ORDER BY p DESC")
@@ -115,7 +118,8 @@ class UniqueBot(irc.IRCClient):
 			self.notice(user, "warning, you repeated " + original + ", you have " + str(points) + " points remaining (" + hash[0:10] + ")")
 			
 			# add 1 point to the person who said this originally
-			self.syncUser(original, 1, current_time)
+			if (original != user):
+				self.syncUser(original, 1, current_time)
 			
 			return
 		
@@ -123,7 +127,7 @@ class UniqueBot(irc.IRCClient):
 		self.factory.c.execute("INSERT INTO said (u, t) VALUES (?,?)",(user,hash,))
 		self.factory.db.commit()
 
-	def syncUser(self, user, points_delta, ctime):
+	def syncUser(self, user, points_delta, ctime, loop = False):
 		# sync this user stuff :D
 		c = self.factory.db.cursor()
 		
@@ -135,7 +139,9 @@ class UniqueBot(irc.IRCClient):
 		# if the user has no record, give them a blank one
 		if (r == None):
 			c.execute("INSERT INTO points (h,p,u) VALUES (?,?,?)", (user, 0, ctime))
-			self.factory.db.commit()
+			
+			if (not loop):
+				self.factory.db.commit()
 			
 			r = (0, ctime)
 			
@@ -144,23 +150,24 @@ class UniqueBot(irc.IRCClient):
 		delta  = ctime - r[1]
 		
 		# have we gotten any points since the last update?
-		points_delta = delta / self.rate
+		tpdelta = delta / self.rate
 		
 		if (points_delta > 0):
-			npoints = min(points + points_delta, self.maxtp)
+			npoints = max(min(points+tpdelta, self.maxtp), points)
 			
 			if npoints == self.maxtp:
 				update_time = ctime
 			else:
-				update_time = r[1] + self.rate * points_delta
+				update_time = r[1] + self.rate * tpdelta
 				
 			points = npoints
 		else:
-			update_time = ctime
+			update_time = r[1]
 			
 		c.execute("UPDATE points SET p = ?, u = ? WHERE h = ?", (points, update_time, user))
 		
-		self.factory.db.commit()
+		if (not loop):
+			self.factory.db.commit()
 		
 		c.close()
 		
