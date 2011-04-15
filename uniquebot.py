@@ -51,7 +51,7 @@ class UniqueBot(irc.IRCClient):
 			return
 		
 		if msg == '!scores':
-			syncAllUsers(current_time)
+			self.syncAllUsers(current_time)
 			
 			for row in self.factory.c:
 					p = str(row[0]).encode('ascii', 'ignore')
@@ -64,7 +64,7 @@ class UniqueBot(irc.IRCClient):
 		# topscore
 		if msg == '!topscore':
 			if current_time - self.last_ts >= 60:
-				syncAllUsers(current_time)
+				self.syncAllUsers(current_time)
 					
 				# now do the right thing
 				self.factory.c.execute("SELECT p, h FROM points ORDER BY p DESC")
