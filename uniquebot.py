@@ -105,7 +105,7 @@ class UniqueBot(irc.IRCClient):
 			# original user who said this line
 			original = row[0].encode('ascii', 'ignore')
 		
-			self.syncUser(user, -1, current_time)
+			points = self.syncUser(user, -1, current_time)
 			
 			# message
 			nmsg = "repeated: "+original+", "+str(points)+" points remaining ("+hash[0:10]+")"
@@ -163,6 +163,8 @@ class UniqueBot(irc.IRCClient):
 		self.factory.db.commit()
 		
 		c.close()
+		
+		return points
 
 	def irc_RPL_WHOISUSER(self, prefix, params):
 		# auth any waiting users
