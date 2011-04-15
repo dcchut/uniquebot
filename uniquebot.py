@@ -53,6 +53,8 @@ class UniqueBot(irc.IRCClient):
 		if msg == '!scores':
 			self.syncAllUsers(current_time)
 			
+			self.factory.c.execute("SELECT p, h FROM points ORDER BY p DESC")
+			
 			for row in self.factory.c:
 					p = str(row[0]).encode('ascii', 'ignore')
 					h = str(row[1]).encode('ascii','ignore')
