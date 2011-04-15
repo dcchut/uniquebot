@@ -125,7 +125,7 @@ class UniqueBot(irc.IRCClient):
 
 	def syncUser(self, user, points_delta, ctime):
 		# sync this user stuff :D
-		c = self.factory.cursor()
+		c = self.factory.db.cursor()
 		
 		# get details about the points of this user
 		c.execute("SELECT p, u FROM points WHERE h = ?", (user,))
