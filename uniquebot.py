@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # uniquebot - by dcchut
 # based on skeleton code by Twisted Matrix Laboratories 
 
