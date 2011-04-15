@@ -50,17 +50,21 @@ class UniqueBot(irc.IRCClient):
 				
 			return
 		
+		if msg == '!scores':
+			syncAllUsers(current_time)
+			
+			for row in self.factory.c:
+					p = str(row[0]).encode('ascii', 'ignore')
+					h = str(row[1]).encode('ascii','ignore')
+					self.notice(user, h + ": " + p + " points")
+					time.sleep(0.5)
+				
+			return
+		
 		# topscore
 		if msg == '!topscore':
 			if current_time - self.last_ts >= 60:
-				# sync all the records first
-				self.factory.c.execute("SELECT h FROM points")
-				
-				for row in self.factory.c:
-					self.syncUser(row[0], 0, current_time, True)
-					
-				# cheap hack
-				self.factory.db.commit()
+				syncAllUsers(current_time)
 					
 				# now do the right thing
 				self.factory.c.execute("SELECT p, h FROM points ORDER BY p DESC")
@@ -127,6 +131,16 @@ class UniqueBot(irc.IRCClient):
 		self.factory.c.execute("INSERT INTO said (u, t) VALUES (?,?)",(user,hash,))
 		self.factory.db.commit()
 
+	def syncAllUsers(self, ctime):
+		# sync all the records first
+		self.factory.c.execute("SELECT h FROM points")
+				
+		for row in self.factory.c:
+			self.syncUser(row[0], 0, ctime, True)
+					
+		# cheap hack
+		self.factory.db.commit()
+	
 	def syncUser(self, user, points_delta, ctime, loop = False):
 		# sync this user stuff :D
 		c = self.factory.db.cursor()
