@@ -150,7 +150,7 @@ class UniqueBot(irc.IRCClient):
 			npoints = min(points + points_delta, self.maxtp)
 			
 			if npoints == self.maxtp:
-				update_time = current_time
+				update_time = ctime
 			else:
 				update_time = r[1] + self.rate * points_delta
 				
