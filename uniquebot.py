@@ -56,6 +56,9 @@ class UniqueBot(irc.IRCClient):
 			self.factory.c.execute("SELECT p, h FROM points ORDER BY p DESC")
 			
 			for row in self.factory.c:
+					if row[0] == 0:
+						continue
+
 					p = str(row[0]).encode('ascii', 'ignore')
 					h = str(row[1]).encode('ascii','ignore')
 					self.notice(user, h + ": " + p + " points")
