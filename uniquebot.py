@@ -46,7 +46,7 @@ class UniqueBot(irc.IRCClient):
 			row = self.factory.c.fetchone()
 			
 			if row != None:
-				self.notice(user, "you have " + str(row[0]) + " points remaining")
+				self.notice(user, "you have " + str(row[0]) + " points")
 				
 			return
 		
@@ -120,11 +120,11 @@ class UniqueBot(irc.IRCClient):
 			points = self.syncUser(user, -1, current_time)
 			
 			# message
-			nmsg = "repeated: "+original+", "+str(points)+" points remaining ("+hash[0:10]+")"
+			nmsg = "repeated: "+original+", "+str(points)+" points ("+hash[0:10]+")"
 			
 			# kick & notify them
-			self.kick(self.factory.channel, user, "repeated " + original + ", " + str(points) + " points remaining (" + hash[0:10] + ")")
-			self.notice(user, "warning, you repeated " + original + ", you have " + str(points) + " points remaining (" + hash[0:10] + ")")
+			self.kick(self.factory.channel, user, "repeated " + original + ", " + str(points) + " points (" + hash[0:10] + ")")
+			self.notice(user, "warning, you repeated " + original + ", you have " + str(points) + " points (" + hash[0:10] + ")")
 			
 			# add 1 point to the person who said this originally
 			if (original != user):
