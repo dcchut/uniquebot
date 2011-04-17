@@ -10,6 +10,7 @@ from twisted.python import log
 # system imports
 import time, sys, sqlite3, hashlib
 
+# make sure only unique things are said
 class UniqueBot(irc.IRCClient):
 	nickname = "robbbot" # nickname of the bot
 	auth 	 = {} 		 # list of (potential) authenticated users
@@ -231,3 +232,29 @@ class UniqueBotFactory(protocol.ClientFactory):
 	def clientConnectionFailed(self, connector, reason):
 		print "connection failed:", reason
 		reactor.stop()
+
+if __name__ == '__main__':
+	# give me the password!
+	if len(sys.argv) != 5:
+		print "Usage: uniquebot.py <server[:port]> <channel> <dbfile> <password>\n"
+		sys.exit(1)
+	
+	# initialize logging
+	log.startLogging(sys.stdout)
+    
+	# create factory protocol and application
+	f = UniqueBotFactory(sys.argv[4], sys.argv[2], sys.argv[3])
+
+	# split server in server & port
+	c = sys.argv[1].split(':')
+	
+	if len(c) == 1:
+		port = 6667
+	else:
+		port = c[1]
+
+	# connect factory to this host and port
+	reactor.connectTCP(c[0], port, f)
+
+	# run bot
+	reactor.run()
