@@ -168,7 +168,7 @@ class UniqueBot(irc.IRCClient):
 		# have we gotten any points since the last update?
 		tpdelta = delta / self.rate
 		
-		if (points_delta > 0):
+		if (tpdelta > 0):
 			npoints = max(min(points+tpdelta, self.maxtp), points)
 			
 			if npoints == self.maxtp:
