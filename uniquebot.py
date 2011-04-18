@@ -31,14 +31,22 @@ class UniqueBot(irc.IRCClient):
 		self.msg("nickserv", "identify " + self.factory.password)
 		print "identifying with nickserv"
 	
+	def isAuthedUser(self, user):
+		return user in self.auth and self.auth[user] == True
+	
 	def kickedFrom(self, channel, kicker, message):
 		if channel == self.factory.channel:
 			# if the kicker is authed, let them kick us
-			if kicker not in self.auth or not self.auth[kicker]:
+			if not self.isAuthedUser(kicked):
 				self.join(self.factory.channel)
 	
 	def privmsg(self, user, channel, msg):
 		if channel == self.nickname:
+			# join the channel
+			if self.isAuthedUser(user):
+				if msg == '!join':
+					self.join(self.factory.channel)
+				
 			# PM's can blow me
 			return
 			
@@ -103,7 +111,7 @@ class UniqueBot(irc.IRCClient):
 			return
 			
 		# leave
-		if msg == '!fuckoff' and user in self.auth and self.auth[user] == True:
+		if msg == '!fuckoff' and self.isAuthedUser(user):
 			self.factory.reconnect = False
 			self.quit('ordered to leave by ' + user)
 			return
