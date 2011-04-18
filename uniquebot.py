@@ -31,6 +31,12 @@ class UniqueBot(irc.IRCClient):
 		self.msg("nickserv", "identify " + self.factory.password)
 		print "identifying with nickserv"
 	
+	def kickedFrom(self, channel, kicker, message):
+		if channel == self.factory.channel:
+			# if the kicker is authed, let them kick us
+			if kicker not in auth or not auth[kicker]:
+				self.join(self.factory.channel)
+	
 	def privmsg(self, user, channel, msg):
 		if channel == self.nickname:
 			# PM's can blow me
