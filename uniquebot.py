@@ -37,7 +37,7 @@ class UniqueBot(irc.IRCClient):
 	def kickedFrom(self, channel, kicker, message):
 		if channel == self.factory.channel:
 			# if the kicker is authed, let them kick us
-			if not self.isAuthedUser(kicked):
+			if not self.isAuthedUser(kicker):
 				self.join(self.factory.channel)
 	
 	def privmsg(self, user, channel, msg):
