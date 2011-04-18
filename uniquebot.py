@@ -42,11 +42,6 @@ class UniqueBot(irc.IRCClient):
 	
 	def privmsg(self, user, channel, msg):
 		if channel == self.nickname:
-			# join the channel
-			if self.isAuthedUser(user):
-				if msg == '!join':
-					self.join(self.factory.channel)
-				
 			# PM's can blow me
 			return
 			
