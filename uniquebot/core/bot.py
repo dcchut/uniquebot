@@ -16,6 +16,8 @@ class UniqueBot(irc.IRCClient):
 	def signedOn(self):
 		# do our own magic here
 		self.setNick(self.factory.nickname)
+		time.sleep(5)
+		
 		self.msg("nickserv", "identify {0}".format(self.factory.password))
 		time.sleep(2)
 		self.join(self.factory.channel)
