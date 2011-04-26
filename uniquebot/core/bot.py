@@ -12,9 +12,11 @@ class UniqueBot(irc.IRCClient):
 	plugins = []
 	plugins_registered = False
 	
+	# do some magic signon stuff here, & register the plugins
 	def signedOn(self):
 		# do our own magic here
 		self.msg("nickserv", "identify {0}".format(self.factory.password))
+		time.sleep(2)
 		self.join(self.factory.channel)
 		
 		# register these mofos
@@ -23,7 +25,8 @@ class UniqueBot(irc.IRCClient):
 			
 			for plugin in self.factory.plugins:
 				self.registerPlugin(plugin)
-
+	
+	# skeleton notice logging
 	def noticed(self, user, channel, msg):	
 		print user, channel, msg
 
@@ -33,7 +36,7 @@ class UniqueBot(irc.IRCClient):
 		(user, hostname) = user.split('!',1)
 		
 		print user, channel, msg
-		
+
 		# for each plugin, do some magic!
 		for plugin in self.plugins:
 			plugin.incoming(user, hostname, channel, msg, current_time, self)
@@ -45,12 +48,16 @@ class UniqueBot(irc.IRCClient):
 			
 			# put the factory into the plugin
 			plugin.factory = self.factory
+			plugin.bot = self
 			plugin.register(self)
+
 			
 			# do we need to register any methods into this class?
 			for method_name in plugin.register_methods:
 				t = getattr(plugin, method_name)
 				setattr(self, method_name, t)
+				
+			print "loaded plugin {0}".format(str(plugin))
 			
 class UniqueBotFactory(protocol.ClientFactory):
 	protocol = UniqueBot
