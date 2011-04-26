@@ -15,6 +15,7 @@ class UniqueBot(irc.IRCClient):
 	# do some magic signon stuff here, & register the plugins
 	def signedOn(self):
 		# do our own magic here
+		self.setNick(self.factory.nickname)
 		self.msg("nickserv", "identify {0}".format(self.factory.password))
 		time.sleep(2)
 		self.join(self.factory.channel)
@@ -63,10 +64,11 @@ class UniqueBotFactory(protocol.ClientFactory):
 	protocol = UniqueBot
 	reconnect = True
 	
-	def __init__(self, password, channel, db, plugins):
+	def __init__(self, nickname, password, channel, db, plugins):
 		self.channel = channel
 		self.password = password
 		self.plugins = plugins
+		self.nickname = nickname
 		
 		# open a "connection" to the sqlite db 
 		self.db = sqlite3.connect(db)

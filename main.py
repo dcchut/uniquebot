@@ -8,8 +8,8 @@ from twisted.internet import reactor
 from twisted.python import log
 
 if __name__ == '__main__':
-	if len(sys.argv) != 5:
-		print "Usage: main.py <server[:port]> <channel> <dbfile> <password>\n"
+	if len(sys.argv) != 6:
+		print "Usage: main.py <server[:port]> <channel> <dbfile> <password> <nickname>\n"
 		sys.exit(1)
 		
 	# split server in server & port
@@ -42,6 +42,6 @@ if __name__ == '__main__':
 	log.startLogging(sys.stdout)
 
 	# create factory
-	f = UniqueBotFactory(sys.argv[4], sys.argv[2], sys.argv[3], plugins.values())
+	f = UniqueBotFactory(sys.argv[5], sys.argv[4], sys.argv[2], sys.argv[3], plugins.values())
 	reactor.connectTCP(c[0], port, f)
 	reactor.run()
