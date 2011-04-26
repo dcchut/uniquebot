@@ -3,3 +3,4 @@ run.bat
 run
 brun
 db
+*.pyc
