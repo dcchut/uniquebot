@@ -1,4 +1,4 @@
-#!/usr/python
+#!/usr/bin/python
 # uniquebot - by dcc
 
 import os, sys
