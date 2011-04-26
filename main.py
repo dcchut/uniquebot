@@ -1,3 +1,6 @@
+#!/usr/python
+# uniquebot - by dcc
+
 import os, sys
 
 from uniquebot.core.bot import UniqueBotFactory
