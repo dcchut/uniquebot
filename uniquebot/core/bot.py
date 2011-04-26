@@ -8,7 +8,7 @@ import time, sqlite3
 
 # make sure only unique things are said
 class UniqueBot(irc.IRCClient):
-	nickname = "robbbot"
+	nickname = "uniquebot"
 	plugins = []
 	plugins_registered = False
 	
