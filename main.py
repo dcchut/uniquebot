@@ -1,7 +1,6 @@
 import os, sys
 
-from uniquebot.core.bot import UniqueBot
-from uniquebot.core.factory import UniqueBotFactory
+from uniquebot.core.bot import UniqueBotFactory
 from twisted.internet import reactor
 from twisted.python import log
 
@@ -23,10 +22,10 @@ for plugin in plugin_dir:
 	
 	# now grab an instance of the plugin
 	plugins[plugin_name] = globals()[plugin_internal_name].Plugin()
-	
+
 log.startLogging(sys.stdout)
 
 # create factory
-f = UniqueBotFactory("r213xxz", "", "#newvce", "db2", plugins.values())
-reactor.connectTCP("roddenberry.freenode.net", 6667, f)
+f = UniqueBotFactory("robbbot99", "#newvce", "db2", plugins.values())
+reactor.connectTCP("chat.freenode.net", 6667, f)
 reactor.run()
