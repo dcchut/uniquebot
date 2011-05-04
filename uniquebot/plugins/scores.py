@@ -18,6 +18,9 @@ class Plugin(CorePlugin):
 			users = bot.getAllUsers()
 			
 			for row in users:
+                if row.points == 0:
+                    continue
+                
 				bot.notice(user, "{0}: {1} points".format(row.user,row.points))
 			return True
 			
