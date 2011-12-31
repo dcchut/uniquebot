@@ -15,7 +15,7 @@ class Plugin(CorePlugin):
         if self.last_weather_time == 0:
             self.last_weather_time = current_time
             self.last_weather_temp = self.gettemp()
-        elif (current_time - self.last_weather_time > 60 * 10):
+        elif (current_time - self.last_weather_time > 60 * 25):
             newtemp = self.gettemp()
             if (newtemp != self.last_weather_temp):
                 self.last_weather_time = current_time
