@@ -17,7 +17,7 @@ class Plugin(CorePlugin):
             self.last_weather_temp = self.gettemp()
         elif (current_time - self.last_weather_time > 60 * 10):
             newtemp = self.gettemp()
-            self.last_weather_time = current_time
             if (newtemp != self.last_weather_temp):
+                self.last_weather_time = current_time
                 bot.say(channel, "weather update: " + str(self.last_weather_temp) + " to " + str(newtemp) + " degrees")
-            self.last_weather_temp = newtemp
+                self.last_weather_temp = newtemp
