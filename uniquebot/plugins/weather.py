@@ -22,16 +22,15 @@ class Plugin(CorePlugin):
         task.LoopingCall(self.update).start(60*5,False)
     
     def update(self):
-        current_time = int(time())
-        
+        current_time = int(time())a
+        newtemp = self.gettemp()
+                
         # do we need a weather update?
         for channel in self.channels:
             cd = self.channels[channel]
             
-            # has 25 minutes elapsed?
-            if (current_time - cd[0] > 60*25):
-                newtemp = self.gettemp()
-                if (newtemp != cd[1]):
-                    cd[0] = current_time
-                    self.bot.say(channel, "weather update: " + str(cd[1]) + " to " + str(newtemp) + " degrees")
-                    cd[1] = newtemp
+            # has the temperature changed by a 1.5 degrees?
+            if (abs(newtemp - cd[1]) >= 1.5 or (current_time - cd[0] > 60*45)): 
+                cd[0] = current_time
+                self.bot.say(channel, "weather update: " + str(cd[1]) + " to " + str(newtemp) + " degrees")
+                cd[1] = newtemp
