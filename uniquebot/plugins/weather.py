@@ -22,7 +22,7 @@ class Plugin(CorePlugin):
         task.LoopingCall(self.update).start(60*5,False)
     
     def update(self):
-        current_time = int(time())a
+        current_time = int(time())
         newtemp = self.gettemp()
                 
         # do we need a weather update?
