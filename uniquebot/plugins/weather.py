@@ -30,7 +30,7 @@ class Plugin(CorePlugin):
             cd = self.channels[channel]
             
             # has the temperature changed by a 1.5 degrees?
-            if (newtemp != cd[1] and (abs(newtemp - cd[1]) >= 1.5 or (current_time - cd[0] > 60*45))): 
+            if (newtemp != cd[1] and (abs(newtemp - cd[1]) >= 1.5 or (current_time - cd[0] > 60*90))): 
                 cd[0] = current_time
                 self.bot.say(channel, "weather update: " + str(cd[1]) + " to " + str(newtemp) + " degrees")
                 cd[1] = newtemp
