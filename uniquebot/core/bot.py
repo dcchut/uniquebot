@@ -79,6 +79,7 @@ class UniqueBotFactory(protocol.ClientFactory):
 		self.c = self.db.cursor()
 		self.c.execute("CREATE TABLE IF NOT EXISTS said(u TEXT, t TEXT)")
 		self.c.execute("CREATE TABLE IF NOT EXISTS points(h TEXT, p INTEGER, u INTEGER)")
+		self.c.execute("CREATE TABLE IF NOT EXISTS markov(f TEXT, t TEXT, o INTEGER)")
 		self.db.commit()
 	
 	def clientConnectionLost(self, connector, reason):
