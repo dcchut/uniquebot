@@ -2,6 +2,7 @@
 from twisted.words.protocols import irc
 from twisted.internet import reactor, protocol
 from twisted.python import log
+from nltk.corpus import wordnet
 
 # system imports
 import time, sqlite3
@@ -75,11 +76,16 @@ class UniqueBotFactory(protocol.ClientFactory):
 		# open a "connection" to the sqlite db 
 		self.db = sqlite3.connect(db)
 		
+		print 'loading wordnet'
+		synsets = wordnet.synsets('cake')
+		print 'loaded wordnet'
+		
 		# (maybe) create the table
 		self.c = self.db.cursor()
 		self.c.execute("CREATE TABLE IF NOT EXISTS said(u TEXT, t TEXT)")
 		self.c.execute("CREATE TABLE IF NOT EXISTS points(h TEXT, p INTEGER, u INTEGER)")
 		self.c.execute("CREATE TABLE IF NOT EXISTS markov(f TEXT, t TEXT, o INTEGER)")
+		self.c.execute("CREATE TABLE IF NOT EXISTS ulastfm(u TEXT, t TEXT)")
 		self.db.commit()
 	
 	def clientConnectionLost(self, connector, reason):
