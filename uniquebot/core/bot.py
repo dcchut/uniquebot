@@ -55,7 +55,6 @@ class UniqueBot(irc.IRCClient):
 			plugin.bot = self
 			plugin.register(self)
 
-			
 			# do we need to register any methods into this class?
 			for method_name in plugin.register_methods:
 				t = getattr(plugin, method_name)
@@ -67,11 +66,12 @@ class UniqueBotFactory(protocol.ClientFactory):
 	protocol = UniqueBot
 	reconnect = True
 	
-	def __init__(self, nickname, password, channel, db, plugins):
+	def __init__(self, nickname, password, channel, db, plugins, cfg):
 		self.channel = channel
 		self.password = password
 		self.plugins = plugins
 		self.nickname = nickname
+		self.cfg = cfg
 		
 		# open a "connection" to the sqlite db 
 		self.db = sqlite3.connect(db)
@@ -98,4 +98,8 @@ class UniqueBotFactory(protocol.ClientFactory):
 	
 	def clientConnectionFailed(self, connector, reason):
 		print "connection failed:", reason
-		reactor.stop()
+		
+		# attempt to reconnect
+		connector.connect()
+				
+		#reactor.stop()

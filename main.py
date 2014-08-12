@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # uniquebot - by dcc
 
-import os, sys
+import os, sys, yaml
 
 from uniquebot.core.bot import UniqueBotFactory
 from twisted.internet import reactor
@@ -20,6 +20,9 @@ if __name__ == '__main__':
 	else:
 		port = c[1]
 	
+	# load the config file
+	cfg = yaml.load(file('config.cfg'))
+	
 	# register all of the plugins
 	plugin_dir = os.listdir('uniquebot/plugins')
 	plugins    = {}
@@ -28,8 +31,8 @@ if __name__ == '__main__':
 		# get the "name" of the plugin
 		plugin_name   = "".join(plugin.split(".")[0:-1])
 		plugin_module = "uniquebot.plugins.%s" % plugin_name
-		
-		if plugin_name == '__init__' or plugin_name in plugins:
+
+		if plugin_name == '__init__' or plugin_name in plugins or plugin_name in cfg['disabled_plugins']:
 			continue
 		
 		# import the shit out of it
@@ -42,6 +45,6 @@ if __name__ == '__main__':
 	log.startLogging(sys.stdout)
 
 	# create factory
-	f = UniqueBotFactory(sys.argv[5], sys.argv[4], sys.argv[2], sys.argv[3], plugins.values())
+	f = UniqueBotFactory(sys.argv[5], sys.argv[4], sys.argv[2], sys.argv[3], plugins.values(), cfg)
 	reactor.connectTCP(c[0], port, f)
 	reactor.run()
