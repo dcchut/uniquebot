@@ -4,7 +4,7 @@ class Plugin(CorePlugin):
 	last_topscore = 0
 	
 	def incoming(self, user, hostname, channel, msg, current_time, bot):
-		if msg == '!points':
+		if msg == '.points':
 			bot.syncAllUsers(current_time)
 			points = bot.getUserPoints(user)
 
@@ -13,7 +13,7 @@ class Plugin(CorePlugin):
 				
 			return True
 		
-		if msg == '!scores':
+		if msg == '.scores':
 			bot.syncAllUsers(current_time)
 			users = bot.getAllUsers()
 			
@@ -24,7 +24,7 @@ class Plugin(CorePlugin):
 				bot.notice(user, "{0}: {1} points".format(row.user,row.points))
 			return True
 			
-		if msg == '!topscore' and current_time - self.last_topscore >= 60:
+		if msg == '.topscore' and current_time - self.last_topscore >= 60:
 			bot.syncAllUsers(current_time)
 			users = bot.getAllUsers()
 			

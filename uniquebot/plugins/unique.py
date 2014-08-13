@@ -3,7 +3,7 @@ import hashlib
 
 class Plugin(CorePlugin):
 	def incoming(self, user, hostname, channel, msg, current_time, bot):
-		if msg[0] == "!":
+		if msg[0] == ".":
 			return
 			
 		# clean it up
