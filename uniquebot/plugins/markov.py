@@ -49,7 +49,7 @@ class Plugin(CorePlugin):
         self.bot.say(channel, ' '.join(words))
     
     def incoming(self, user, hostname, channel, msg, current_time, bot):
-        if user == 'robbo' and msg[0:4] == '!say':
+        if user == 'robbo' and msg[0:4] == '.say':
             self.sayLine(channel, msg[5:])
             return
         
