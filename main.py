@@ -40,11 +40,11 @@ if __name__ == '__main__':
 		exec("import {0} as {1}".format(plugin_module, plugin_internal_name))
 		
 		# now grab an instance of the plugin
-		plugins[plugin_name] = globals()[plugin_internal_name].Plugin()
+		plugins[plugin_name] = globals()[plugin_internal_name].Plugin(plugin_name, plugin_internal_name, plugin_module)
 
 	log.startLogging(sys.stdout)
 
 	# create factory
-	f = UniqueBotFactory(sys.argv[5], sys.argv[4], sys.argv[2], sys.argv[3], plugins.values(), cfg)
+	f = UniqueBotFactory(sys.argv[5], sys.argv[4], sys.argv[2], sys.argv[3], plugins, cfg)
 	reactor.connectTCP(c[0], port, f)
 	reactor.run()

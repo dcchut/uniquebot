@@ -5,7 +5,7 @@ from twisted.python import log
 from nltk.corpus import wordnet
 
 # system imports
-import time, sqlite3
+import time, sqlite3, sys
 
 # make sure only unique things are said
 class UniqueBot(irc.IRCClient):
@@ -27,7 +27,7 @@ class UniqueBot(irc.IRCClient):
 		if self.plugins_registered == False:
 			self.plugins_registered = True
 			
-			for plugin in self.factory.plugins:
+			for plugin in self.factory.plugins.values():
 				self.registerPlugin(plugin)
 	
 	# skeleton notice logging
@@ -40,7 +40,14 @@ class UniqueBot(irc.IRCClient):
 		(user, hostname) = user.split('!',1)
 		
 		print user, channel, msg
-
+		
+		# would like to make this a plugin,
+		# but then weird things might happen!
+		if (user == 'robbo' and msg == '.reload'):
+			print 'starting plugin reload'
+			self.factory.reloadPlugins(self)
+			print 'finished plugin reload'
+		
 		# for each plugin, do some magic!
 		for plugin in self.plugins:
 			plugin.incoming(user, hostname, channel, msg, current_time, self)
@@ -62,6 +69,20 @@ class UniqueBot(irc.IRCClient):
 				
 			print "loaded plugin {0}".format(str(plugin))
 			
+	def unregisterPlugin(self, plugin):
+		# nothing to unregister
+		if plugin not in self.plugins:
+			return
+			
+		# remove the registered methods
+		for method_name in plugin.register_methods:
+			delattr(self, method_name)
+		
+		# remove the plugin from our loaded plugins list
+		self.plugins.remove(plugin)
+		
+		print "unregistered plugin {0}".format(str(plugin))
+		
 class UniqueBotFactory(protocol.ClientFactory):
 	protocol = UniqueBot
 	reconnect = True
@@ -88,6 +109,29 @@ class UniqueBotFactory(protocol.ClientFactory):
 		self.c.execute("CREATE TABLE IF NOT EXISTS ulastfm(u TEXT, t TEXT)")
 		self.db.commit()
 	
+	def reloadPlugins(self, bot):
+		plugins = {}
+		
+		for plugin in self.plugins.values():
+			# unregister each plugin with the bot
+			bot.unregisterPlugin(plugin)
+			
+			# reload the module
+			reload(sys.modules[plugin.plugin_module])
+			
+			# get a new instance
+			plugins[plugin.plugin_name] = sys.modules[plugin.plugin_module].Plugin(plugin.plugin_name, plugin.plugin_internal_name, plugin.plugin_module)
+			
+			# delete old instance
+			del plugin
+		
+		# now register each of the new plugins
+		for plugin in plugins.values():
+			bot.registerPlugin(plugin)
+			
+		# update this bad boy
+		self.plugins = plugins
+		
 	def clientConnectionLost(self, connector, reason):
 		# only reconnect if we haven't been issued a quit
 		if (self.reconnect):
