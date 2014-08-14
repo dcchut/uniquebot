@@ -13,3 +13,7 @@ class CorePlugin():
 	def register(self, bot):
 		# maybe do something upon registration?
 		return
+		
+	def unregister(self, bot):
+		# maybe do something when we unregister?
+		return

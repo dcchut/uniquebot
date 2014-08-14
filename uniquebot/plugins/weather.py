@@ -7,6 +7,7 @@ import forecastio
 class Plugin(CorePlugin):
     bot = False
     channels = {}
+    upd = None
     
     def gettemp(self):
         # melbourne
@@ -29,8 +30,14 @@ class Plugin(CorePlugin):
         self.bot = bot
         
         # run our weather updater every 5 minutes
-        task.LoopingCall(self.update).start(60*5,False)
-    
+        self.upd = task.LoopingCall(self.update)
+        self.upd.start(60*5, False)
+        
+    def unregister(self, bot):
+        # stop this looper
+        self.upd.stop()
+        self.upd = None
+        
     def update(self):
         current_time = int(time())
 

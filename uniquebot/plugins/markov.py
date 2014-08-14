@@ -14,10 +14,16 @@ class Plugin(CorePlugin):
     
     def sayLine(self, channel, msg):
         wc = randint(6,12)
+        
         if len(msg) > 0:
-            words = [choice(msg.split()).lower()]
+            smsg = [w.lower() for w in msg.split() if w.isalpha()]
         else:
-            words = [choice(['i', 'the', 'if'])]
+            smsg = []
+        
+        if len(smsg) > 0:
+            words = [choice(smsg)]
+        else:
+            words = [choice(['i', 'the'])]
         
         # now go through the database and collect the next word!
         while len(words) != wc:
@@ -49,7 +55,7 @@ class Plugin(CorePlugin):
         self.bot.say(channel, ' '.join(words))
     
     def incoming(self, user, hostname, channel, msg, current_time, bot):
-        if self.factory.nickname in msg:
+        if self.factory.nickname in msg and msg[0] != '.':
             self.sayLine(channel, msg.replace(self.factory.nickname, ''))
             return
         

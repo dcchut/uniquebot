@@ -78,6 +78,9 @@ class UniqueBot(irc.IRCClient):
 		for method_name in plugin.register_methods:
 			delattr(self, method_name)
 		
+		# deregister the plugin
+		plugin.unregister(self)
+		
 		# remove the plugin from our loaded plugins list
 		self.plugins.remove(plugin)
 		
