@@ -13,9 +13,9 @@ class Plugin(CorePlugin):
             self.factory.c.execute("UPDATE markov SET o = o + 1 WHERE f = ? AND t = ?", cond)
     
     def sayLine(self, channel, msg):
-        wc = randint(4,12)
+        wc = randint(6,12)
         if len(msg) > 0:
-            words = [msg.split()[0]]
+            words = [choice(msg.split()).lower()]
         else:
             words = [choice(['i', 'the', 'if'])]
         
@@ -49,8 +49,8 @@ class Plugin(CorePlugin):
         self.bot.say(channel, ' '.join(words))
     
     def incoming(self, user, hostname, channel, msg, current_time, bot):
-        if user == 'robbo' and msg[0:4] == '.say':
-            self.sayLine(channel, msg[5:])
+        if self.factory.nickname in msg:
+            self.sayLine(channel, msg.replace(self.factory.nickname, ''))
             return
         
         prev = None
