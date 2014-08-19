@@ -44,10 +44,18 @@ class Plugin(CorePlugin):
                 # get their now playing track
                 t = u.get_now_playing()
             
+                # if we can't find their now playing track,
+                # get the last track they played
                 if t is None:
-                    # get their most recently played track
-                    t = u.get_recent_tracks(1)[0].track
-                
+                    rpt = u.get_recent_tracks(1)
+                    
+                    # check if lastfm is being derpy
+                    if len(rpt) == 0:
+                        return
+                    
+                    # get the track played    
+                    t = rpt[0].track
+                    
                 a = t.get_album()
                 
                 if a is not None:
