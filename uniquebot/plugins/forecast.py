@@ -12,9 +12,13 @@ class Plugin(CorePlugin):
         self.bot = bot
         
     def incoming(self, user, hostname, channel, msg, current_time, bot):
-        if (msg[:8] == '.weather'):
+        if (msg[:8] == '.weather' or msg[:2] == '.w'):
             # optional location specifier
-            location = msg[9:].strip()
+            location = ' '.join(msg.split()[1:]).strip()
+            
+            # get the location specifier
+            # optional location specifier
+            #location = msg[9:].strip()
             
             if (location == 'smad'):
                 location = 'Austin, TX'

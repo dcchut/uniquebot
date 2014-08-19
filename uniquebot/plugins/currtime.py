@@ -11,8 +11,9 @@ class Plugin(CorePlugin):
         self.bot = bot
         
     def incoming(self, user, hostname, channel, msg, current_time, bot):
-        if (msg[:5] == '.time'):
-            location = msg[6:].strip()
+        if (msg[:5] == '.time' or msg[:2] == '.t'):
+            # get the optional location
+            location = ' '.join(msg.split()[1:]).strip()
             
             if (location == 'smad'):
                 location = 'Austin, TX'
