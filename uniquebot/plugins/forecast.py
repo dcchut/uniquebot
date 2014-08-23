@@ -56,9 +56,11 @@ class Plugin(CorePlugin):
                     break
             
             # now get the weather records
-            forecast = forecastio.load_forecast(self.factory.cfg['weather']['api_key'], lat,lng, units='uk')
-    
-            curr = forecast.currently()
+            try:
+                forecast = forecastio.load_forecast(self.factory.cfg['weather']['api_key'], lat,lng, units='uk')
+                curr = forecast.currently()
+            except:
+                return
             
             # format it
             fstring = 'Weather for ' + ltx + ' | ' + curr.summary + ', ' + str(round(curr.temperature,1)) + 'C, '
