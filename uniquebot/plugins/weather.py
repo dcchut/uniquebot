@@ -20,7 +20,7 @@ class Plugin(CorePlugin):
             forecast = forecastio.load_forecast(self.factory.cfg['weather']['api_key'], lat,lng, units='uk')
             curr = forecast.currently()
             return curr.temperature    
-        except ValueError:
+        except:
             # couldn't get the result, return something crazy
             return False
     
